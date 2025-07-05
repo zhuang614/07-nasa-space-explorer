@@ -16,6 +16,9 @@ const gallery = document.getElementById('gallery');
 const NASA_APOD_API_URL = 'https://api.nasa.gov/planetary/apod';
 const NASA_API_KEY = '6j2reLrAdel8tIWILpVWR7yGi6deLOhHRW0g6fbe'; // User's personal NASA API key
 
+// NASA Image and Video Library API endpoint
+const NASA_IMAGE_API_URL = 'https://images-api.nasa.gov/search';
+
 // Show a loading message in the gallery
 function showLoading() {
   gallery.innerHTML = `
@@ -59,26 +62,29 @@ function showRandomFact() {
 showRandomFact();
 
 // Create gallery HTML from NASA APOD data, supporting images and videos
+// Show the gallery with larger images, full title, date, and explanation for both APOD and NASA Library
 function showGallery(items) {
   if (!items.length) {
     showMessage('No entries found for this date range.');
     return;
   }
   gallery.innerHTML = items.map(item => {
+    // We'll store all details as data attributes for modal use
     if (item.media_type === 'image') {
-      // Image entry
       return `
-        <article class="gallery-item" tabindex="0" aria-labelledby="title-${item.date}">
-          <img src="${item.url}" alt="${item.title}" />
+        <article class="gallery-item" tabindex="0" aria-labelledby="title-${item.date}"
+          data-title="${item.title.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"
+          data-date="${item.date}"
+          data-img="${item.url}"
+          data-explanation="${item.explanation.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">
+          <img src="${item.url}" alt="${item.title}" class="gallery-thumb" />
           <h2 id="title-${item.date}" class="gallery-title">${item.title}</h2>
           <p>${item.date}</p>
         </article>
       `;
     } else if (item.media_type === 'video') {
-      // Video entry (YouTube or other)
       let videoEmbed = '';
       if (item.url.includes('youtube.com') || item.url.includes('youtu.be')) {
-        // Extract YouTube video ID
         let videoId = '';
         const ytMatch = item.url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/)([\w-]+)/);
         if (ytMatch) videoId = ytMatch[1];
@@ -90,30 +96,35 @@ function showGallery(items) {
         videoEmbed = `<a href="${item.url}" target="_blank" rel="noopener" class="video-link">Watch Video</a>`;
       }
       return `
-        <article class="gallery-item" tabindex="0" aria-labelledby="title-${item.date}">
+        <article class="gallery-item" tabindex="0" aria-labelledby="title-${item.date}"
+          data-title="${item.title.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"
+          data-date="${item.date}"
+          data-img="${item.url}"
+          data-explanation="${item.explanation.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">
           <div class="video-thumb">${videoEmbed}</div>
           <h2 id="title-${item.date}" class="gallery-title">${item.title}</h2>
           <p>${item.date}</p>
         </article>
       `;
     } else {
-      // Unknown media type
       return '';
     }
   }).join('');
 }
 
-// Fetch APOD images for the selected date range and set background
+// Fetch both APOD and NASA Image and Video Library images for the selected date range and set background
 async function fetchImages(start, end) {
   showLoading();
   try {
-    const url = `${NASA_APOD_API_URL}?api_key=${NASA_API_KEY}&start_date=${start}&end_date=${end}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch images.');
-    const data = await res.json();
-    const items = Array.isArray(data) ? data : [data];
+    // Fetch APOD images
+    const apodUrl = `${NASA_APOD_API_URL}?api_key=${NASA_API_KEY}&start_date=${start}&end_date=${end}`;
+    const apodRes = await fetch(apodUrl);
+    if (!apodRes.ok) throw new Error('Failed to fetch APOD images.');
+    const apodData = await apodRes.json();
+    const apodItems = Array.isArray(apodData) ? apodData : [apodData];
+
     // Set background image to the first APOD image (if available)
-    const firstImage = items.find(item => item.media_type === 'image');
+    const firstImage = apodItems.find(item => item.media_type === 'image');
     if (firstImage && firstImage.url) {
       document.body.style.backgroundImage = `url('${firstImage.url}')`;
       document.body.style.backgroundSize = 'cover';
@@ -122,7 +133,46 @@ async function fetchImages(start, end) {
     } else {
       document.body.style.backgroundImage = '';
     }
-    showGallery(items);
+
+    // Fetch NASA Image and Video Library images (filter by exact date range)
+    // We'll fetch results and filter them by date between start and end
+    const imageLibUrl = `${NASA_IMAGE_API_URL}?q=space&media_type=image,video`;
+    const imageLibRes = await fetch(imageLibUrl);
+    let imageLibItems = [];
+    if (imageLibRes.ok) {
+      const imageLibData = await imageLibRes.json();
+      const items = (imageLibData.collection && imageLibData.collection.items) ? imageLibData.collection.items : [];
+      // Filter items by date range
+      imageLibItems = items.map(item => {
+        const dataItem = item.data[0];
+        const links = item.links || [];
+        const media_type = dataItem.media_type;
+        let url = '';
+        if (media_type === 'image') {
+          const imgLink = links.find(l => l.render === 'image');
+          url = imgLink ? imgLink.href : '';
+        } else if (media_type === 'video') {
+          const vidLink = links.find(l => l.render === 'image');
+          url = vidLink ? vidLink.href : '';
+        }
+        return {
+          title: dataItem.title || 'NASA Media',
+          date: dataItem.date_created ? dataItem.date_created.split('T')[0] : '',
+          url: url,
+          explanation: dataItem.description || '',
+          media_type: media_type
+        };
+      })
+      // Only keep items within the selected date range
+      .filter(item => {
+        if (!item.date) return false;
+        return item.date >= start && item.date <= end && item.url;
+      });
+    }
+
+    // Combine APOD and NASA Image Library items
+    const allItems = [...apodItems, ...imageLibItems];
+    showGallery(allItems);
   } catch (err) {
     showMessage('Could not load images. Please try again.');
     document.body.style.backgroundImage = '';
@@ -161,13 +211,18 @@ function createModal() {
 
 const modal = createModal();
 
-// Show modal with image details
+// Show modal with large image, full title, date, and explanation
 function openModal({ title, date, img, explanation }) {
+  // Set the large image (or video thumbnail)
   modal.querySelector('.modal-img').src = img;
   modal.querySelector('.modal-img').alt = title;
+  // Set the full title
   modal.querySelector('.modal-title').textContent = title;
+  // Set the date
   modal.querySelector('.modal-date').textContent = date;
+  // Set the explanation text
   modal.querySelector('.modal-explanation').textContent = explanation;
+  // Show the modal
   modal.style.display = 'flex';
 }
 
@@ -180,6 +235,7 @@ function closeModal() {
 gallery.addEventListener('click', (e) => {
   const item = e.target.closest('.gallery-item');
   if (!item) return;
+  // Get all details from data attributes
   openModal({
     title: item.dataset.title,
     date: item.dataset.date,
