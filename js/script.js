@@ -62,14 +62,47 @@ function showRandomFact() {
 showRandomFact();
 
 // Create gallery HTML from NASA APOD data, supporting images and videos
-// Show the gallery with larger images, full title, date, and explanation for both APOD and NASA Library
+// Show the gallery with 9 items, one per date from start to end, randomly chosen from APOD and NASA Library for that date
 function showGallery(items) {
   if (!items.length) {
     showMessage('No entries found for this date range.');
     return;
   }
-  gallery.innerHTML = items.map(item => {
-    // We'll store all details as data attributes for modal use
+  // Helper to get all dates between start and end (inclusive)
+  function getDateArray(start, end) {
+    const arr = [];
+    let dt = new Date(start);
+    const endDt = new Date(end);
+    while (dt <= endDt) {
+      arr.push(dt.toISOString().slice(0, 10));
+      dt.setDate(dt.getDate() + 1);
+    }
+    return arr;
+  }
+  // Group items by date
+  const itemsByDate = {};
+  items.forEach(item => {
+    if (!item.date) return;
+    if (!itemsByDate[item.date]) itemsByDate[item.date] = [];
+    itemsByDate[item.date].push(item);
+  });
+  // Get the selected date range from the inputs
+  const start = startInput.value;
+  const end = endInput.value;
+  const dateList = getDateArray(start, end);
+  // For each date, randomly select one item if available
+  const randomItems = dateList
+    .map(date => {
+      const arr = itemsByDate[date];
+      if (arr && arr.length > 0) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      } else {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    .slice(0, 9);
+  gallery.innerHTML = randomItems.map(item => {
     if (item.media_type === 'image') {
       return `
         <article class="gallery-item" tabindex="0" aria-labelledby="title-${item.date}"
@@ -84,12 +117,14 @@ function showGallery(items) {
       `;
     } else if (item.media_type === 'video') {
       let videoEmbed = '';
+      let thumbUrl = item.url;
       if (item.url.includes('youtube.com') || item.url.includes('youtu.be')) {
         let videoId = '';
         const ytMatch = item.url.match(/(?:youtube\.com\/.*[?&]v=|youtu\.be\/)([\w-]+)/);
         if (ytMatch) videoId = ytMatch[1];
         if (videoId) {
           videoEmbed = `<iframe width="100%" height="200" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen title="${item.title}"></iframe>`;
+          thumbUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
         }
       }
       if (!videoEmbed) {
@@ -99,7 +134,7 @@ function showGallery(items) {
         <article class="gallery-item" tabindex="0" aria-labelledby="title-${item.date}"
           data-title="${item.title.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"
           data-date="${item.date}"
-          data-img="${item.url}"
+          data-img="${thumbUrl}"
           data-explanation="${item.explanation.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">
           <div class="video-thumb">${videoEmbed}</div>
           <h2 id="title-${item.date}" class="gallery-title">${item.title}</h2>
@@ -211,11 +246,28 @@ function createModal() {
 
 const modal = createModal();
 
-// Show modal with large image, full title, date, and explanation
+// Show modal with large image (for images), or just info for videos, full title, date, and explanation
 function openModal({ title, date, img, explanation }) {
-  // Set the large image (or video thumbnail)
-  modal.querySelector('.modal-img').src = img;
-  modal.querySelector('.modal-img').alt = title;
+  // Find the item in the current gallery by date and title
+  const item = Array.from(document.querySelectorAll('.gallery-item')).find(el =>
+    el.dataset.title === title && el.dataset.date === date
+  );
+  let mediaType = 'image';
+  if (item) {
+    // Try to detect if this is a video card
+    const videoThumb = item.querySelector('.video-thumb');
+    if (videoThumb) mediaType = 'video';
+  }
+  const modalImg = modal.querySelector('.modal-img');
+  if (mediaType === 'video') {
+    // Hide the image for video modals
+    modalImg.style.display = 'none';
+  } else {
+    // Show the image for image modals
+    modalImg.style.display = '';
+    modalImg.src = img;
+    modalImg.alt = title;
+  }
   // Set the full title
   modal.querySelector('.modal-title').textContent = title;
   // Set the date
