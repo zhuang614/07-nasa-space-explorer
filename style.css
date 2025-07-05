@@ -1,4 +1,234 @@
+/* Space Fact section */
+.space-fact {
+  background: #232d4b;
+  color: #f9d923;
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+  font-size: 1.3em;
+  text-align: center;
+  padding: 18px 10px 12px 10px;
+  margin: 0 0 18px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(35,45,75,0.08);
+  letter-spacing: 0.5px;
+}
+.video-link {
+  display: inline-block;
+  background: #fc3d21;
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  margin: 10px 0;
+  transition: background 0.2s;
+}
+.video-link:hover {
+  background: #0b3d91;
+  color: #fff;
+}
+.video-thumb {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #232d4b;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
 /* Global reset & box sizing */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base page styles */
+
+body {
+  /* NASA font: "Barlow Condensed" is recommended, fallback to Arial */
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+  background-color: #000000; /* NASA black */
+  color: #fff;
+  padding: 20px;
+}
+
+/* Centered container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #0b3d91; /* NASA blue */
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(11,61,145,0.15);
+  padding-bottom: 20px;
+}
+
+/* Header */
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  background: #fc3d21; /* NASA red */
+  border-radius: 12px 12px 0 0;
+}
+
+
+h1 {
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 2.5em;
+  margin-left: 10px;
+}
+
+/* Logo */
+
+.logo {
+  width: 140px;
+  margin-right: 15px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+/* Date‐picker & button row */
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 0 20px;
+  background: #232d4b; /* NASA dark blue */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(35,45,75,0.08);
+}
+
+/* Inputs and buttons */
+
+input[type="date"],
+button {
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+  font-weight: 500;
+  color: #232d4b;
+  padding: 10px 15px;
+  border: 1px solid #bfcbe2;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1.4;
+  width: 100%;
+}
+
+/* Button specific */
+
+button {
+  background-color: #fc3d21; /* NASA red */
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+  transition: background 0.2s, box-shadow 0.2s;
+  border: 2px solid #fff;
+  text-shadow: 0 1px 2px #000, 0 0 2px #0b3d91;
+  font-weight: 700;
+}
+button:hover, button:focus {
+  background-color: #0b3d91; /* NASA blue */
+  color: #fff;
+  border-color: #f9d923;
+  box-shadow: 0 0 0 3px #f9d92355;
+  outline: none;
+}
+
+/* Stack horizontally on wider screens */
+@media (min-width: 600px) {
+  .filters {
+    flex-direction: row;
+    padding: 0;
+  }
+  
+  input[type="date"],
+  button {
+    width: auto;
+  }
+}
+
+/* Gallery flex container */
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  justify-content: center;
+  background: #232d4b;
+  border-radius: 8px;
+}
+
+/* Gallery items */
+
+.gallery-item {
+  flex: 1 1 100%;
+  min-width: 280px;
+  max-width: 500px;
+  background: #fff;
+  color: #232d4b;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(11,61,145,0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.gallery-item:hover {
+  box-shadow: 0 4px 16px #fc3d21aa;
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Three columns on wider screens */
+@media (min-width: 1000px) {
+  .gallery-item {
+    flex: 0 1 31%;
+  }
+}
+
+
+.gallery-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #232d4b;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.gallery-item:hover img {
+  transform: scale(1.08);
+  z-index: 1;
+}
+
+
+.gallery-item h3 {
+  color: #0b3d91;
+  font-size: 1.2em;
+  margin: 10px 0 0 0;
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+}
+.gallery-item p {
+  margin-top: 10px;
+  padding: 5px;
+  font-size: 14px;
+  color: #061f4a;/* Global reset & box sizing */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -178,6 +408,94 @@ button:hover {
   padding: 5px;
   font-size: 14px;
   color: #fc3d21;
+}
+
+/* Placeholder content */
+
+.placeholder {
+  flex: 1 1 100%;
+  text-align: center;
+  padding: 40px;
+  color: #bfcbe2;
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+}
+
+.placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+/* Modal styles */
+#modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+
+#modal .modal-content {
+  background: #0b3d91;
+  color: #fff;
+  border-radius: 10px;
+  padding: 30px 20px 20px 20px;
+  max-width: 600px;
+  width: 95vw;
+  box-shadow: 0 4px 24px rgba(11,61,145,0.25);
+  text-align: center;
+  position: relative;
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+}
+
+#modal .modal-img {
+  width: 100%;
+  max-height: 350px;
+  object-fit: contain;
+  border-radius: 6px;
+  margin-bottom: 18px;
+  background: #222;
+}
+
+
+#modal .modal-title {
+  font-size: 1.5em;
+  margin: 10px 0 5px 0;
+  color: #f9d923;
+  font-family: 'Barlow Condensed', Arial, Helvetica, sans-serif;
+}
+
+
+#modal .modal-date {
+  font-size: 1em;
+  color: #fc3d21;
+  margin-bottom: 10px;
+}
+
+#modal .modal-explanation {
+  font-size: 1em;
+  color: #fff;
+  margin-top: 10px;
+  text-align: left;
+}
+
+#modal .modal-close {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  font-size: 2em;
+  color: #fff;
+  cursor: pointer;
+  background: none;
+  border: none;
+  outline: none;
+  z-index: 10;
+}
+#modal .modal-close:hover {
+  color: #f9d923;
+}
 }
 
 /* Placeholder content */

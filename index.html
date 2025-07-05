@@ -16,8 +16,10 @@
     </header>
 
     <div class="filters">
-      <input type="date" id="startDate" />
-      <input type="date" id="endDate" />
+      <label for="startDate" class="visually-hidden" id="label-startDate">Start Date</label>
+      <input type="date" id="startDate" name="startDate" autocomplete="off" aria-labelledby="label-startDate" required />
+      <label for="endDate" class="visually-hidden" id="label-endDate">End Date</label>
+      <input type="date" id="endDate" name="endDate" autocomplete="off" aria-labelledby="label-endDate" required />
       <button>Get Space Images</button>
     </div>
 
